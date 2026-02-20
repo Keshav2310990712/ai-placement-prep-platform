@@ -94,3 +94,49 @@ Mention strengths and improvements.
 
   return text.trim();
 };
+
+
+
+
+exports.generateStudyPlan = async (targetRole, weakTopic) => {
+
+  const prompt = `
+You are a senior placement mentor.
+
+Create a structured 7-day study plan.
+
+Target Role: ${targetRole}
+Weak Topic: ${weakTopic}
+
+Return the response in clean readable text format like:
+
+Day 1:
+- Task 1
+- Task 2
+
+Day 2:
+...
+
+Make it practical and interview focused.
+`;
+
+  const response = await axios.post(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+    {
+      contents: [
+        {
+          parts: [{ text: prompt }]
+        }
+      ]
+    },
+    {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }
+  );
+
+  const text = response.data.candidates[0].content.parts[0].text;
+
+  return text.trim();
+};
