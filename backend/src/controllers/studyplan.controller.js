@@ -1,29 +1,28 @@
 const StudyPlan = require("../models/StudyPlan");
 const { generateStudyPlan } = require("../services/ai.service");
+const asyncHandler = require("../utils/asyncHandler");
+const AppError = require("../utils/AppError");
 
-exports.createPlan = async (req, res) => {
-  try {
-    const { targetRole, weakTopic } = req.body;
+exports.createPlan = asyncHandler(async (req, res, next) => {
 
-    if (!targetRole || !weakTopic) {
-      return res.status(400).json({ message: "All fields required" });
-    }
+  const { targetRole, weakTopic } = req.body;
 
-    const planText = await generateStudyPlan(targetRole, weakTopic);
-
-    const plan = await StudyPlan.create({
-      user: req.user._id,
-      targetRole,
-      weakTopic,
-      planText
-    });
-
-    res.status(200).json({
-      success: true,
-      plan
-    });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  if (!targetRole || !weakTopic) {
+    return next(new AppError("All fields required", 400));
   }
-};
+
+  const planText = await generateStudyPlan(targetRole, weakTopic);
+
+  const plan = await StudyPlan.create({
+    user: req.user._id,
+    targetRole,
+    weakTopic,
+    planText
+  });
+
+  res.status(200).json({
+    success: true,
+    plan
+  });
+
+});
