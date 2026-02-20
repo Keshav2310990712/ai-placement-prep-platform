@@ -11,6 +11,9 @@ const userRoutes = require("./routes/user.routes");
 const resumeRoutes = require("./routes/resume.routes");
 const interviewRoutes = require("./routes/interview.routes");
 const studyPlanRoutes = require("./routes/studyplan.routes");
+const errorHandler = require("./middleware/error.middleware");
+
+
 
 const app = express();
 
@@ -28,6 +31,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/resume", resumeRoutes);
 app.use("/api/interview", interviewRoutes);
 app.use("/api/study-plan", studyPlanRoutes);
+app.use(errorHandler);
 
 // Health route
 app.get("/api/health", (req, res) => {
