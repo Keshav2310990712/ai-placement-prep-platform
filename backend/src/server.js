@@ -1,13 +1,15 @@
 const express = require("express");
 const dotenv = require("dotenv");
+
+dotenv.config();
+
 const cors = require("cors");
 const morgan = require("morgan");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
+const resumeRoutes = require("./routes/resume.routes");
 
-
-dotenv.config();
 
 const app = express();
 
@@ -22,6 +24,7 @@ app.use(morgan("dev"));
 //routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/resume", resumeRoutes);
 
 
 
