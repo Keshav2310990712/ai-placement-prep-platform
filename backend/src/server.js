@@ -36,7 +36,11 @@ app.use(cors({
 app.use(express.json({ limit: "10kb" }));
 
 //logging 
-app.use(morgan("dev"));
+//app.use(morgan("dev"));
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+}
+
 
 // 🔒 Apply global rate limiter BEFORE routes
 app.use("/api", apiLimiter);

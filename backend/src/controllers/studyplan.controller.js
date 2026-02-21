@@ -4,7 +4,7 @@ const asyncHandler = require("../utils/asyncHandler");
 const AppError = require("../utils/AppError");
 
 exports.createPlan = asyncHandler(async (req, res, next) => {
-
+    throw new Error("Testing error middleware");
   const { targetRole, weakTopic } = req.body;
 
   if (!targetRole || !weakTopic) {
