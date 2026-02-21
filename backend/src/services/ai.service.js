@@ -1,32 +1,26 @@
-const axios = require("axios");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const AppError = require("../utils/AppError");
 
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+const model = genAI.getGenerativeModel({
+  model: "gemini-2.5-flash"
+});
+
+// Common function
 const callGemini = async (prompt) => {
-  const response = await axios.post(
-    GEMINI_URL,
-    {
-      contents: [
-        {
-          parts: [{ text: prompt }]
-        }
-      ]
-    },
-    {
-      headers: {
-        "Content-Type": "application/json"
-      }
-    }
-  );
-
-  return response.data.candidates[0].content.parts[0].text;
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+  console.error("Gemini SDK FULL Error:", JSON.stringify(error, null, 2));
+  throw error;   // temporarily throw raw error
+}
 };
 
-// =======================
-// Resume Analysis
-// =======================
+// ================= Resume =================
 exports.analyzeResume = async (resumeText) => {
-
   const prompt = `
 You are a professional placement mentor.
 
@@ -34,12 +28,11 @@ Analyze the following resume:
 
 ${resumeText}
 
-Return response strictly in this JSON format:
-
+Return response strictly in JSON format:
 {
-  "score": number (out of 10),
-  "improvementPoints": ["point1", "point2", "point3", "point4", "point5"],
-  "missingSkills": ["skill1", "skill2", "skill3"]
+  "score": number,
+  "improvementPoints": [],
+  "missingSkills": []
 }
 `;
 
@@ -55,88 +48,44 @@ Return response strictly in this JSON format:
   return text;
 };
 
-// =======================
-// Generate Interview Question
-// =======================
+// ================= Question =================
 exports.generateQuestion = async (topic) => {
-
   const prompt = `
 You are a technical interviewer.
-
 Generate ONE interview question about ${topic}.
 Only return the question text.
 `;
 
-  const text = await callGemini(prompt);
-
-  return text.trim();
+  return (await callGemini(prompt)).trim();
 };
 
-// =======================
-// Evaluate Interview Answer
-// =======================
+// ================= Evaluate =================
 exports.evaluateAnswer = async (question, answer) => {
-
   const prompt = `
 You are a senior technical interviewer.
 
 Question:
 ${question}
 
-Candidate Answer:
+Answer:
 ${answer}
 
 Give short feedback (5-6 lines).
-Mention strengths and improvements.
 `;
 
-  const text = await callGemini(prompt);
-
-  return text.trim();
+  return (await callGemini(prompt)).trim();
 };
 
-
-
-
+// ================= Study Plan =================
 exports.generateStudyPlan = async (targetRole, weakTopic) => {
-
   const prompt = `
-You are a senior placement mentor.
-
 Create a structured 7-day study plan.
 
 Target Role: ${targetRole}
 Weak Topic: ${weakTopic}
 
-Return the response in clean readable text format like:
-
-Day 1:
-- Task 1
-- Task 2
-
-Day 2:
-...
-
-Make it practical and interview focused.
+Return clean readable format.
 `;
 
-  const response = await axios.post(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-    {
-      contents: [
-        {
-          parts: [{ text: prompt }]
-        }
-      ]
-    },
-    {
-      headers: {
-        "Content-Type": "application/json"
-      }
-    }
-  );
-
-  const text = response.data.candidates[0].content.parts[0].text;
-
-  return text.trim();
+  return (await callGemini(prompt)).trim();
 };
